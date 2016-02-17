@@ -19,7 +19,7 @@ public class StringSetImpl implements StringSet {
 
     @Override
     public boolean add(String element) {
-        return addX(element, root, 0);
+        return !contains(element) && addX(element, root, 0);
     }
 
     private boolean addX(final String s, final Node node, int i) {
