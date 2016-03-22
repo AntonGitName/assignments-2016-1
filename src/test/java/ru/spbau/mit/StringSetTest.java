@@ -1,6 +1,5 @@
 package ru.spbau.mit;
 
-import static org.junit.Assert.*;
 import org.junit.Test;
 
 import java.io.ByteArrayInputStream;
@@ -8,7 +7,23 @@ import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.OutputStream;
 
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertTrue;
+
 public class StringSetTest {
+
+    public static StringSet instance() {
+        try {
+            return (StringSet) Class.forName("ru.spbau.mit.StringSetImpl").newInstance();
+        } catch (InstantiationException e) {
+            e.printStackTrace();
+        } catch (IllegalAccessException e) {
+            e.printStackTrace();
+        } catch (ClassNotFoundException e) {
+            e.printStackTrace();
+        }
+        throw new IllegalStateException("Error while class loading");
+    }
 
     @Test
     public void testSimple() {
@@ -38,7 +53,6 @@ public class StringSetTest {
         assertTrue(newStringSet.contains("cde"));
     }
 
-
     @Test(expected=SerializationException.class)
     public void testSimpleSerializationFails() {
         StringSet stringSet = instance();
@@ -54,18 +68,5 @@ public class StringSetTest {
         };
 
         ((StreamSerializable) stringSet).serialize(outputStream);
-    }
-
-    public static StringSet instance() {
-        try {
-            return (StringSet) Class.forName("ru.spbau.mit.StringSetImpl").newInstance();
-        } catch (InstantiationException e) {
-            e.printStackTrace();
-        } catch (IllegalAccessException e) {
-            e.printStackTrace();
-        } catch (ClassNotFoundException e) {
-            e.printStackTrace();
-        }
-        throw new IllegalStateException("Error while class loading");
     }
 }
