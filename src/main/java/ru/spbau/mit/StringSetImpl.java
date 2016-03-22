@@ -6,58 +6,58 @@ package ru.spbau.mit;
  */
 public class StringSetImpl implements StringSet {
 
-    public static final int ALPHABET_SIZE = 2 * ('z' - 'a' + 1);
+    private static final int ALPHABET_SIZE = 2 * ('z' - 'a' + 1);
     private final Node root = new Node();
 
     public static int charToIndex(char c) {
         if (Character.isLowerCase(c)) {
             return c - 'a';
         } else {
-            return 'z' - 'a' + c - 'A' + 1;
+            return (c - 'A') + ('z' - 'a') + 1;
         }
     }
 
     @Override
     public boolean add(String element) {
-        return !contains(element) && addX(element, root, 0);
+        return !contains(element) && add(element, root, 0);
     }
 
-    private boolean addX(final String s, final Node node, int i) {
+    private boolean add(String s, Node node, int i) {
         node.incCounter();
         if (i == s.length()) {
-            final boolean res = !node.isLeaf();
             node.setLeaf(true);
-            return res;
+        } else {
+            add(s, node.getOrCreateNode(s.charAt(i)), i + 1);
         }
-        return addX(s, node.getNode(s.charAt(i)), i + 1);
+        return true;
     }
 
     @Override
     public boolean contains(String element) {
-        return containsX(element, root, 0);
+        return contains(element, root, 0);
     }
 
-    private boolean containsX(final String s, final Node node, int i) {
+    private boolean contains(String s, Node node, int i) {
         if (i == s.length()) {
             return node.isLeaf();
         }
         final char c = s.charAt(i);
-        return node.hasNode(c) && containsX(s, node.getNode(c), i + 1);
+        return node.hasNode(c) && contains(s, node.getOrCreateNode(c), i + 1);
     }
 
     @Override
     public boolean remove(String element) {
         if (contains(element)) {
-            removeX(element, root, 0);
+            remove(element, root, 0);
             return true;
         }
         return false;
     }
 
-    private void removeX(final String s, final Node node, int i) {
+    private void remove(String s, Node node, int i) {
         node.decCounter();
         if (i != s.length()) {
-            removeX(s, node.getNode(s.charAt(i)), i + 1);
+            remove(s, node.getOrCreateNode(s.charAt(i)), i + 1);
         }
     }
 
@@ -68,16 +68,16 @@ public class StringSetImpl implements StringSet {
 
     @Override
     public int howManyStartsWithPrefix(String prefix) {
-        return prefixX(prefix, root, 0);
+        return prefix(prefix, root, 0);
     }
 
-    public int prefixX(final String s, final Node node, int i) {
+    private int prefix(String s, Node node, int i) {
         if (i == s.length()) {
             return node.getCounter();
         }
         final char c = s.charAt(i);
         if (node.hasNode(c)) {
-            return prefixX(s, node.getNode(c), i + 1);
+            return prefix(s, node.getOrCreateNode(c), i + 1);
         }
         return 0;
     }
@@ -99,6 +99,9 @@ public class StringSetImpl implements StringSet {
             --counter;
             if (counter == 0) {
                 isLeaf = false;
+                for (int i = 0; i < children.length; ++i) {
+                    children[i] = null;
+                }
             }
         }
 
@@ -110,7 +113,7 @@ public class StringSetImpl implements StringSet {
             this.isLeaf = isLeaf;
         }
 
-        public Node getNode(char c) {
+        public Node getOrCreateNode(char c) {
             final int index = charToIndex(c);
             if (children[index] == null) {
                 children[index] = new Node();
