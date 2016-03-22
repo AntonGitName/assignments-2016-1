@@ -1,15 +1,17 @@
 package ru.spbau.mit;
 
+import java.io.*;
+
 /**
  * @author antonpp
  * @since 16/02/16
  */
-public class StringSetImpl implements StringSet {
+public class StringSetImpl implements StringSet, StreamSerializable {
 
     private static final int ALPHABET_SIZE = 2 * ('z' - 'a' + 1);
     private final Node root = new Node();
 
-    public static int charToIndex(char c) {
+    private static int charToIndex(char c) {
         if (Character.isLowerCase(c)) {
             return c - 'a';
         } else {
@@ -82,7 +84,17 @@ public class StringSetImpl implements StringSet {
         return 0;
     }
 
-    private static final class Node {
+    @Override
+    public void serialize(OutputStream out) {
+        root.serialize(out);
+    }
+
+    @Override
+    public void deserialize(InputStream in) {
+        root.deserialize(in);
+    }
+
+    private static final class Node implements StreamSerializable {
         private final Node[] children = new Node[ALPHABET_SIZE];
         private int counter;
         private boolean isLeaf;
@@ -123,6 +135,40 @@ public class StringSetImpl implements StringSet {
 
         public boolean hasNode(char c) {
             return children[charToIndex(c)] != null;
+        }
+
+        @Override
+        public void serialize(OutputStream out) {
+            try (final DataOutputStream dos = new DataOutputStream(out)) {
+                dos.writeBoolean(isLeaf);
+                dos.writeInt(counter);
+                for (Node child : children) {
+                    if (child == null) {
+                        dos.writeBoolean(false);
+                    } else {
+                        dos.writeBoolean(true);
+                        child.serialize(out);
+                    }
+                }
+            } catch (IOException e) {
+                throw new SerializationException(e);
+            }
+        }
+
+        @Override
+        public void deserialize(InputStream in) {
+            try (final DataInputStream dis = new DataInputStream(in)) {
+                isLeaf = dis.readBoolean();
+                counter = dis.readInt();
+                for (int i = 0; i < children.length; ++i) {
+                    if (dis.readBoolean()) {
+                        children[i] = new Node();
+                        children[i].deserialize(in);
+                    }
+                }
+            } catch (IOException e) {
+                throw new SerializationException(e);
+            }
         }
     }
 }
