@@ -55,7 +55,7 @@ public class HashMultiset<T> implements Set<T>, Multiset<T> {
         final Object[] array = new Object[sz];
         int i = 0;
         for (Object o : this) {
-            array[i] = o;
+            array[i++] = o;
         }
         return array;
     }
@@ -65,7 +65,7 @@ public class HashMultiset<T> implements Set<T>, Multiset<T> {
         if (array.length >= sz) {
             int i = 0;
             for (T o : this) {
-                array[i] = (T1) o;
+                array[i++] = (T1) o;
             }
             return array;
         } else {
@@ -169,16 +169,13 @@ public class HashMultiset<T> implements Set<T>, Multiset<T> {
             if (listIterator == null) {
                 return setIterator.hasNext();
             } else {
-                return listIterator.hasNext();
+                return setIterator.hasNext() || listIterator.hasNext();
             }
         }
 
         @Override
         public T next() {
-            if (listIterator == null) {
-                listIterator = setIterator.next().iterator();
-            }
-            if (!listIterator.hasNext()) {
+            if (listIterator == null || !listIterator.hasNext()) {
                 listIterator = setIterator.next().iterator();
             }
             return listIterator.next();
