@@ -17,7 +17,9 @@ public class HashMultiset<T> implements Set<T>, Multiset<T> {
             int i = 0;
             int hc = element.hashCode();
             for (Object o : data.get(hc)) {
-                i += o.equals(element) ? 1 : 0;
+                if (o.equals(element)) {
+                    ++i;
+                }
             }
             return i;
         } else {
@@ -251,7 +253,8 @@ public class HashMultiset<T> implements Set<T>, Multiset<T> {
 
             @Override
             public Entry<T> next() {
-                return new TheEntry(l = it.next());
+                l = it.next();
+                return new TheEntry(l);
             }
 
             @Override
