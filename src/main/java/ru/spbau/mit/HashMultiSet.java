@@ -158,6 +158,7 @@ public class HashMultiset<T> implements Set<T>, Multiset<T> {
 
         private Iterator<LinkedList<T>> setIterator;
         private Iterator<T> listIterator;
+        private LinkedList<T> l;
 
         private MultiIterator() {
             setIterator = data.values().iterator();
@@ -176,17 +177,19 @@ public class HashMultiset<T> implements Set<T>, Multiset<T> {
         @Override
         public T next() {
             if (listIterator == null || !listIterator.hasNext()) {
-                listIterator = setIterator.next().iterator();
+                l = setIterator.next();
+                listIterator = l.iterator();
             }
             return listIterator.next();
         }
 
         @Override
         public void remove() {
-            if (listIterator == null) {
-                listIterator = setIterator.next().iterator();
-            }
             listIterator.remove();
+            if (l.isEmpty()) {
+                setIterator.remove();
+            }
+            --sz;
         }
     }
 
