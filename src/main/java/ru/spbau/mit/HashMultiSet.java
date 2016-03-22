@@ -8,13 +8,18 @@ import java.util.*;
  */
 public class HashMultiset<T> implements Set<T>, Multiset<T> {
 
-    private final Map<Integer, LinkedList<T>> data = new HashMap<>();
+    private final Map<Integer, LinkedList<T>> data = new LinkedHashMap<>();
     private int sz;
 
     @Override
     public int count(Object element) {
         if (data.containsKey(element.hashCode())) {
-            return data.get(element.hashCode()).size();
+            int i = 0;
+            int hc = element.hashCode();
+            for (Object o : data.get(hc)) {
+                i += o.equals(element) ? 1 : 0;
+            }
+            return i;
         } else {
             return 0;
         }
@@ -88,8 +93,14 @@ public class HashMultiset<T> implements Set<T>, Multiset<T> {
         final boolean res = contains(o);
         if (res) {
             final int hc = o.hashCode();
-            data.get(hc).removeFirst();
-            --sz;
+            Iterator<T> it = data.get(hc).iterator();
+            while (it.hasNext()) {
+                if (it.next().equals(o)) {
+                    it.remove();
+                    --sz;
+                    break;
+                }
+            }
             if (data.get(hc).isEmpty()) {
                 data.remove(hc);
             }
@@ -202,34 +213,35 @@ public class HashMultiset<T> implements Set<T>, Multiset<T> {
 
         @Override
         public int size() {
-            return sz;
+            return data.size();
         }
 
         private final class TheEntry implements Multiset.Entry<T> {
 
-            private final T obj;
+            private final LinkedList<T> obj;
 
-            private TheEntry(T obj) {
+            private TheEntry(LinkedList<T> obj) {
                 this.obj = obj;
             }
 
             @Override
             public T getElement() {
-                return obj;
+                return obj.getFirst();
             }
 
             @Override
             public int getCount() {
-                return 1;
+                return obj.size();
             }
         }
 
         private final class EntryIterator implements Iterator<Multiset.Entry<T>> {
 
-            private Iterator<T> it;
+            private Iterator<LinkedList<T>> it;
+            private LinkedList<T> l;
 
             private EntryIterator() {
-                it = HashMultiset.this.iterator();
+                it = data.values().iterator();
             }
 
             @Override
@@ -239,7 +251,13 @@ public class HashMultiset<T> implements Set<T>, Multiset<T> {
 
             @Override
             public Entry<T> next() {
-                return new TheEntry(it.next());
+                return new TheEntry(l = it.next());
+            }
+
+            @Override
+            public void remove() {
+                sz -= l.size();
+                it.remove();
             }
         }
     }
