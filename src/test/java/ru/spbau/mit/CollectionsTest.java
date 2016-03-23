@@ -130,7 +130,7 @@ public class CollectionsTest {
         final boolean any = Collections.foldl(new Function2<Boolean, Boolean, Boolean>() {
             @Override
             public Boolean apply(Boolean aBoolean, Boolean aBoolean2) {
-                return Boolean.logicalOr(aBoolean, aBoolean2);
+                return aBoolean || aBoolean2;
             }
         }, false, listBools);
 
