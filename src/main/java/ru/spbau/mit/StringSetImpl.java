@@ -1,5 +1,8 @@
 package ru.spbau.mit;
 
+import java.util.LinkedList;
+import java.util.List;
+
 /**
  * @author antonpp
  * @since 16/02/16
@@ -34,31 +37,35 @@ public class StringSetImpl implements StringSet {
 
     @Override
     public boolean contains(String element) {
-        return contains(element, root, 0);
+        final LinkedList<Node> path = getPath(element);
+        return getPath(element) != null && path.getLast().isLeaf();
     }
 
-    private boolean contains(String s, Node node, int i) {
-        if (i == s.length()) {
-            return node.isLeaf();
+    private LinkedList<Node> getPath(String s) {
+        final LinkedList<Node> path = new LinkedList<>();
+        path.add(root);
+        Node curNode = root;
+        for (int i = 0; i < s.length(); ++i) {
+            if (curNode.hasNode(s.charAt(i))) {
+                curNode = curNode.getNode(s.charAt(i));
+                path.add(curNode);
+            } else {
+                return null;
+            }
         }
-        final char c = s.charAt(i);
-        return node.hasNode(c) && contains(s, node.getOrCreateNode(c), i + 1);
+        return path;
     }
 
     @Override
     public boolean remove(String element) {
-        if (contains(element)) {
-            remove(element, root, 0);
+        final List<Node> path = getPath(element);
+        if (path != null) {
+            for (Node node : path) {
+                node.decCounter();
+            }
             return true;
         }
         return false;
-    }
-
-    private void remove(String s, Node node, int i) {
-        node.decCounter();
-        if (i != s.length()) {
-            remove(s, node.getOrCreateNode(s.charAt(i)), i + 1);
-        }
     }
 
     @Override
@@ -68,19 +75,14 @@ public class StringSetImpl implements StringSet {
 
     @Override
     public int howManyStartsWithPrefix(String prefix) {
-        return prefix(prefix, root, 0);
+        final LinkedList<Node> path = getPath(prefix);
+        if (path == null) {
+            return 0;
+        } else {
+            return path.getLast().getCounter();
+        }
     }
 
-    private int prefix(String s, Node node, int i) {
-        if (i == s.length()) {
-            return node.getCounter();
-        }
-        final char c = s.charAt(i);
-        if (node.hasNode(c)) {
-            return prefix(s, node.getOrCreateNode(c), i + 1);
-        }
-        return 0;
-    }
 
     private static final class Node {
         private final Node[] children = new Node[ALPHABET_SIZE];
@@ -118,6 +120,11 @@ public class StringSetImpl implements StringSet {
             if (children[index] == null) {
                 children[index] = new Node();
             }
+            return children[index];
+        }
+
+        public Node getNode(char c) {
+            final int index = charToIndex(c);
             return children[index];
         }
 
