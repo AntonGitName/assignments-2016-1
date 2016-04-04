@@ -13,7 +13,7 @@ public final class Collections {
     private Collections() {
     }
 
-    public static <R, A> Iterable<R> map(Function1<? extends R, ? super A> mapper,
+    public static <R, A> Iterable<R> map(Function1<? super A, ? extends R> mapper,
                                          Iterable<? extends A> iterable) {
         final List<R> mapped = new ArrayList<>();
         for (A obj : iterable) {
@@ -51,12 +51,12 @@ public final class Collections {
         return takeWhile(predicate.not(), iterable);
     }
 
-    public static <A, B> B foldr(Function2<? extends B, ? super A, ? super B> op,
+    public static <A, B> B foldr(Function2<? super A, ? super B, ? extends B> op,
                                  B ini, Iterable<? extends A> foldable) {
         return foldr(op, ini, foldable.iterator());
     }
 
-    private static <A, B> B foldr(Function2<? extends B, ? super A, ? super B> op,
+    private static <A, B> B foldr(Function2<? super A, ? super B, ? extends B> op,
                                   B ini, Iterator<? extends A> it) {
         if (!it.hasNext()) {
             return ini;
@@ -65,7 +65,7 @@ public final class Collections {
         }
     }
 
-    public static <A, B> A foldl(Function2<? extends A, ? super A, ? super B> op,
+    public static <A, B> A foldl(Function2<? super A, ? super B, ? extends A> op,
                                  A acc, Iterable<? extends B> foldable) {
         for (B b : foldable) {
             acc = op.apply(acc, b);

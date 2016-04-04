@@ -7,15 +7,16 @@ import org.junit.Test;
  * @author antonpp
  * @since 23/03/16
  */
+@SuppressWarnings("checkstyle:magicnumber")
 public class Function2Test {
 
-    private final Function2<Long, Integer, Integer> f = new Function2<Long, Integer, Integer>() {
+    private final Function2<Integer, Integer, Long> f = new Function2<Integer, Integer, Long>() {
         @Override
         public Long apply(Integer integer, Integer integer2) {
             return (long) integer - (long) integer2;
         }
     };
-    private final Function1<String, Object> g = new Function1<String, Object>() {
+    private final Function1<Object, String> g = new Function1<Object, String>() {
         @Override
         public String apply(Object arg) {
             return arg.toString();

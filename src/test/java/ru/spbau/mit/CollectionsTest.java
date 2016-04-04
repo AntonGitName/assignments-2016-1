@@ -8,13 +8,13 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.*;
 
 /**
  * @author antonpp
  * @since 23/03/16
  */
+@SuppressWarnings({"checkstyle:magicnumber", "checkstyle:avoidinlineconditionals"})
 public class CollectionsTest {
 
     private static final Predicate<Integer> IS_PRIME = new Predicate<Integer>() {
@@ -68,14 +68,14 @@ public class CollectionsTest {
 
     @Test
     public void testMap() {
-        assertEquals(Arrays.asList(1, 0, 0, 1, 1), Collections.map(new Function1<Integer, Boolean>() {
+        assertEquals(Arrays.asList(1, 0, 0, 1, 1), Collections.map(new Function1<Boolean, Integer>() {
             @Override
             public Integer apply(Boolean arg) {
                 return arg ? 1 : 0;
             }
         }, listBools));
 
-        assertEquals(Arrays.asList(1, 2, 3), Collections.map(new Function1<Integer, String>() {
+        assertEquals(Arrays.asList(1, 2, 3), Collections.map(new Function1<String, Integer>() {
             @Override
             public Integer apply(String arg) {
                 return Integer.parseInt(arg);
@@ -120,7 +120,7 @@ public class CollectionsTest {
             }
         }, 0, listInts));
 
-        assertEquals("321", Collections.foldr(new Function2<StringBuffer, String, StringBuffer>() {
+        assertEquals("321", Collections.foldr(new Function2<String, StringBuffer, StringBuffer>() {
             @Override
             public StringBuffer apply(String s, StringBuffer stringBuffer) {
                 return stringBuffer.append(IS_EMPTY.not().apply(s) ? s : "");
@@ -157,5 +157,18 @@ public class CollectionsTest {
                 return integer - integer2;
             }
         }, 0, listInts));
+    }
+
+    @Test
+    public void testGenericRestrictions() {
+        final List<Integer> a = Arrays.asList(1, 2, 3, 4, 5, 6);
+        final Function1<Object, String> mapper = new Function1<Object, String>() {
+            @Override
+            public String apply(Object arg) {
+                return Integer.toString(arg.hashCode());
+            }
+        };
+        Iterable<Object> b = Collections.<Object, Object>map(mapper, a);
+        assertNotNull(b);
     }
 }

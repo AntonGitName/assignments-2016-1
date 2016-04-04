@@ -2,8 +2,7 @@ package ru.spbau.mit;
 
 import org.junit.Test;
 
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.*;
 import static ru.spbau.mit.Predicate.ALWAYS_FALSE;
 import static ru.spbau.mit.Predicate.ALWAYS_TRUE;
 
@@ -23,7 +22,8 @@ public class PredicateTest {
         assertTrue(ALWAYS_TRUE.or(new Predicate<Object>() {
             @Override
             public Boolean apply(Object arg) {
-                throw new RuntimeException();
+                fail("Lazy OR failed");
+                return true;
             }
         }).apply(new Object()));
     }
