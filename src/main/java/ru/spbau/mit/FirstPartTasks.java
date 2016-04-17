@@ -56,9 +56,9 @@ public final class FirstPartTasks {
     // Альбом в котором максимум рейтинга минимален
     // (если в альбоме нет ни одного трека, считать, что максимум рейтинга в нем --- 0)
     public static Optional<Album> minMaxRating(Stream<Album> albums) {
-        return albums.collect(Collectors.minBy(Comparator.comparing(album -> album.getTracks().stream().
-                        map(Track::getRating).max(Comparator.<Integer>naturalOrder()),
-                Comparator.comparing(x -> x.isPresent() ? x.get() : 0))));
+        final Function<Album, Integer> mapAlbumToMinRating = album -> album.getTracks().stream().
+                map(Track::getRating).max(Comparator.<Integer>naturalOrder()).orElse(0);
+        return albums.min(Comparator.comparing(mapAlbumToMinRating, Comparator.<Integer>naturalOrder()));
     }
 
     // Список альбомов, отсортированный по убыванию среднего рейтинга его треков (0, если треков нет)
@@ -82,7 +82,8 @@ public final class FirstPartTasks {
     }
 
     // Вернуть поток из объектов класса 'clazz'
+    @SuppressWarnings("unchecked")
     public static <R> Stream<R> filterIsInstance(Stream<?> s, Class<R> clazz) {
-        return s.filter(clazz::isInstance).map(clazz::cast);
+        return (Stream<R>) s.filter(clazz::isInstance);
     }
 }

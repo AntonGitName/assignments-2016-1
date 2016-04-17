@@ -18,15 +18,14 @@ public final class SecondPartTasks {
 
     // Найти строки из переданных файлов, в которых встречается указанная подстрока.
     public static List<String> findQuotes(List<String> paths, CharSequence sequence) {
-        return paths.stream().flatMap(p -> {
+        final Function<String, Stream<String>> mapper = p -> {
             try {
                 return Files.lines(Paths.get(p));
             } catch (IOException e) {
                 throw new RuntimeException(e);
             }
-        }).
-                filter(p -> p.contains(sequence)).
-                collect(Collectors.toList());
+        };
+        return paths.stream().flatMap(mapper).filter(p -> p.contains(sequence)).collect(Collectors.toList());
     }
 
     // В квадрат с длиной стороны 1 вписана мишень.
