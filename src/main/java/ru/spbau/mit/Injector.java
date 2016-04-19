@@ -18,20 +18,20 @@ public final class Injector {
         final Constructor constructor = rootCls.getDeclaredConstructors()[0];
         final Class[] dependencies = constructor.getParameterTypes();
 
-        final List<Object> implObjects = new ArrayList<>(implementationClassNames.size());
+        final List<Class> implObjects = new ArrayList<>(implementationClassNames.size());
         for (String className : implementationClassNames) {
-            implObjects.add(Class.forName(className).newInstance());
+            implObjects.add(Class.forName(className));
         }
 
         final Map<Class, Object> dependencySolver = new HashMap<>(dependencies.length);
         for (Class dependency : dependencies) {
             Object resolver = null;
-            for (Object impl: implObjects) {
-                if (dependency.isInstance(impl)) {
+            for (Class impl: implObjects) {
+                if (dependency.isAssignableFrom(impl)) {
                     if (resolver != null) {
                         throw new AmbiguousImplementationException();
                     } else {
-                        resolver = impl;
+                        resolver = impl.newInstance();
                     }
                 }
             }
