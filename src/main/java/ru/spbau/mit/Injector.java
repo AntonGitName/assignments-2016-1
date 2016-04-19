@@ -24,14 +24,25 @@ public final class Injector {
         }
 
         final Map<Class, Object> dependencySolver = new HashMap<>(dependencies.length);
+        final List<Object> instatiaded = new ArrayList<>();
         for (Class dependency : dependencies) {
             Object resolver = null;
+            for (Object instance : instatiaded) {
+                if (dependency.isInstance(instance)) {
+                    if (resolver != null) {
+                        throw new AmbiguousImplementationException();
+                    } else {
+                        resolver = instance;
+                    }
+                }
+            }
             for (Class impl: implObjects) {
                 if (dependency.isAssignableFrom(impl)) {
                     if (resolver != null) {
                         throw new AmbiguousImplementationException();
                     } else {
                         resolver = impl.newInstance();
+                        instatiaded.add(resolver);
                     }
                 }
             }
