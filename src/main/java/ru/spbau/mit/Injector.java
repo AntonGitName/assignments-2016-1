@@ -47,6 +47,9 @@ public final class Injector {
                     if (dependencySolver.containsKey(dependency)) {
                         throw new AmbiguousImplementationException();
                     }
+                    if (callers.contains(clazz)) {
+                        throw new InjectionCycleException();
+                    }
                     List<Class> newCallers = new ArrayList<>(callers);
                     newCallers.add(toCreate);
                     final Object obj = createInstance(createdInstances, clazz, newCallers, implClasses);
