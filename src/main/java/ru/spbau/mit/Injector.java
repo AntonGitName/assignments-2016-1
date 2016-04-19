@@ -41,7 +41,11 @@ public final class Injector {
                     if (resolver != null) {
                         throw new AmbiguousImplementationException();
                     } else {
-                        resolver = impl.newInstance();
+                        try {
+                            resolver = impl.newInstance();
+                        } catch (Exception e) {
+                            throw new InjectionCycleException();
+                        }
                         instatiaded.add(resolver);
                     }
                 }
