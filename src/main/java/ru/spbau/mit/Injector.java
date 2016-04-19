@@ -25,6 +25,7 @@ public final class Injector {
 
         final Map<Class, Object> dependencySolver = new HashMap<>(dependencies.length);
         final List<Object> instatiaded = new ArrayList<>();
+        boolean probablyCyclic = false;
         for (Class dependency : dependencies) {
             Object resolver = null;
             for (Object instance : instatiaded) {
@@ -44,14 +45,18 @@ public final class Injector {
                         try {
                             resolver = impl.newInstance();
                         } catch (Exception e) {
-                            throw new InjectionCycleException();
+                            probablyCyclic = true;
                         }
                         instatiaded.add(resolver);
                     }
                 }
             }
             if (resolver == null) {
-                throw new ImplementationNotFoundException();
+                if (probablyCyclic) {
+                    throw new InjectionCycleException();
+                } else {
+                    throw new ImplementationNotFoundException();
+                }
             }
             dependencySolver.put(dependency, resolver);
         }
