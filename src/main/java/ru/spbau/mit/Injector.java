@@ -22,37 +22,18 @@ public final class Injector {
         for (String className : implementationClassNames) {
             implClasses.add(Class.forName(className));
         }
-
-        final Map<Class, Object> dependencySolver = new HashMap<>(dependencies.length);
         final List<Object> instantiated = new ArrayList<>();
-        for (Class dependency : dependencies) {
-            Object resolver = null;
-
-            for (Class impl: implClasses) {
-                if (dependency.isAssignableFrom(impl)) {
-                    if (resolver != null) {
-                        throw new AmbiguousImplementationException();
-                    } else {
-                        try {
-                            resolver = createInstance(instantiated, impl);
-                        } catch (Exception e) {
-                            throw new InjectionCycleException();
-                        }
-                    }
-                }
-            }
-            if (resolver == null) {
-                throw new ImplementationNotFoundException();
-            }
-            dependencySolver.put(dependency, resolver);
-        }
-        final List<Object> cstrArgs = Arrays.stream(dependencies).map(dependencySolver::get).
-                collect(Collectors.toList());
-        return constructor.newInstance(cstrArgs.toArray());
+        return createInstance(instantiated, rootCls, new ArrayList<>(), implClasses);
     }
 
-    private static Object createInstance(List<Object> createdInstances, Class toCreate)
+    private static Object createInstance(List<Object> createdInstances, Class toCreate,
+                                         List<Class> callers, List<Class> implClasses)
             throws Exception {
+
+        if (callers.contains(toCreate)) {
+            throw new InjectionCycleException();
+        }
+
         final Constructor constructor = toCreate.getDeclaredConstructors()[0];
         final Class[] dependencies = constructor.getParameterTypes();
         final Map<Class, Object> dependencySolver = new HashMap<>(dependencies.length);
@@ -64,17 +45,21 @@ public final class Injector {
         }
 
         for (Class dependency : dependencies) {
-            boolean needNewInstance = true;
-            for (Object obj : createdInstances) {
-                if (dependency.isInstance(obj)) {
-                    needNewInstance = false;
-                    dependencySolver.put(dependency, obj);
+            boolean flag = true;
+            for (Class clazz : implClasses) {
+                if (dependency.isAssignableFrom(clazz)) {
+                    if (!flag) {
+                        throw new AmbiguousImplementationException();
+                    }
+                    flag = false;
+                    List<Class> newCallers = new ArrayList<>(callers);
+                    newCallers.add(toCreate);
+                    dependencySolver.put(dependency,
+                            createInstance(createdInstances, clazz, newCallers, implClasses));
                 }
             }
-            if (needNewInstance) {
-                final Object obj = createInstance(createdInstances, dependency);
-                createdInstances.add(obj);
-                dependencySolver.put(dependency, obj);
+            if (flag) {
+                throw new ImplementationNotFoundException();
             }
         }
 
