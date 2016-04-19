@@ -54,8 +54,9 @@ public final class Injector {
                     flag = false;
                     List<Class> newCallers = new ArrayList<>(callers);
                     newCallers.add(toCreate);
-                    dependencySolver.put(dependency,
-                            createInstance(createdInstances, clazz, newCallers, implClasses));
+                    final Object obj = createInstance(createdInstances, clazz, newCallers, implClasses);
+                    dependencySolver.put(dependency, obj);
+                    createdInstances.add(obj);
                 }
             }
             if (flag) {
@@ -65,6 +66,8 @@ public final class Injector {
 
         final List<Object> cstrArgs = Arrays.stream(dependencies).map(dependencySolver::get).
                 collect(Collectors.toList());
-        return constructor.newInstance(cstrArgs.toArray());
+        final Object instance = constructor.newInstance(cstrArgs.toArray());
+        createdInstances.add(instance);
+        return instance;
     }
 }
