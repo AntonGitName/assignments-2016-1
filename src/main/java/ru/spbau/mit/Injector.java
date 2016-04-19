@@ -1,7 +1,6 @@
 package ru.spbau.mit;
 
 import java.lang.reflect.Constructor;
-import java.lang.reflect.InvocationTargetException;
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -53,7 +52,7 @@ public final class Injector {
     }
 
     private static Object createInstance(List<Object> createdInstances, Class toCreate)
-            throws IllegalAccessException, InstantiationException, InvocationTargetException {
+            throws Exception {
         final Constructor constructor = toCreate.getDeclaredConstructors()[0];
         final Class[] dependencies = constructor.getParameterTypes();
         final Map<Class, Object> dependencySolver = new HashMap<>(dependencies.length);
@@ -73,7 +72,7 @@ public final class Injector {
                 }
             }
             if (needNewInstance) {
-                final Object obj = dependency.newInstance();
+                final Object obj = createInstance(createdInstances, dependency);
                 createdInstances.add(obj);
                 dependencySolver.put(dependency, obj);
             }
