@@ -15,9 +15,6 @@ public final class Injector {
      */
     public static Object initialize(String rootClassName, List<String> implementationClassNames) throws Exception {
         final Class rootCls = Class.forName(rootClassName);
-        final Constructor constructor = rootCls.getDeclaredConstructors()[0];
-        final Class[] dependencies = constructor.getParameterTypes();
-
         final List<Class> implClasses = new ArrayList<>(implementationClassNames.size());
         for (String className : implementationClassNames) {
             implClasses.add(Class.forName(className));
@@ -45,13 +42,11 @@ public final class Injector {
         }
 
         for (Class dependency : dependencies) {
-            boolean flag = true;
             for (Class clazz : implClasses) {
                 if (dependency.isAssignableFrom(clazz)) {
-                    if (!flag) {
+                    if (dependencySolver.containsKey(dependency)) {
                         throw new AmbiguousImplementationException();
                     }
-                    flag = false;
                     List<Class> newCallers = new ArrayList<>(callers);
                     newCallers.add(toCreate);
                     final Object obj = createInstance(createdInstances, clazz, newCallers, implClasses);
@@ -59,7 +54,10 @@ public final class Injector {
                     createdInstances.add(obj);
                 }
             }
-            if (flag) {
+        }
+
+        for (Class dependency : dependencies) {
+            if (!dependencySolver.containsKey(dependency)) {
                 throw new ImplementationNotFoundException();
             }
         }
