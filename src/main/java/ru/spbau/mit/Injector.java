@@ -40,7 +40,8 @@ public final class Injector {
             }
             dependencySolver.put(dependency, resolver);
         }
-        final List<Object> cstrArgs = Arrays.stream(dependencies).map(dependencySolver::get).collect(Collectors.toList());
+        final List<Object> cstrArgs = Arrays.stream(dependencies).map(dependencySolver::get).
+                collect(Collectors.toList());
         return constructor.newInstance(cstrArgs.toArray());
     }
 }
